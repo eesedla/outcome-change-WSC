@@ -11,17 +11,17 @@
 </head>
 <body>
   <div class="viz-container">
-    <div class="viz-title">
-      <div class="viz-kicker">Cleveland Division of Police · Wearable Camera System</div>
-      <div class="viz-subtitle">How outcomes for WCS charges have changed over time</div>
+    <div class="viz-header">
+      <div class="viz-kicker">Signal Cleveland</div>
+      <div class="viz-heading">How outcomes for Body Camera charges have changed over time</div>
     </div>
-    <div class="chart-wrap">
+    <div class="chart-area">
       <svg class="chart-svg" id="chart" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div class="legend" id="legend"></div>
   </div>
 
-  <div class="tooltip" id="tooltip"></div>
+  <div class="bar-tooltip" id="tooltip"></div>
 
   <script>
     const CATEGORIES = [
@@ -124,7 +124,7 @@
         const y = yPx(cumY + val);
 
         const rect = svgEl("rect", {
-          class: "bar-segment",
+          class: "svg-bar",
           x, y,
           width: barW,
           height: barH,
@@ -132,18 +132,22 @@
         });
 
         rect.addEventListener("mouseenter", () => {
-          tooltip.style.display = "block";
           tooltip.innerHTML =
-            `<strong>${d.year} — ${key}</strong><br>` +
-            `${val} case${val !== 1 ? "s" : ""}<br>` +
-            `<span class="tip-dim">Total that year: ${total}</span>`;
+            `<span class="tt-title">${d.year} — ${key}</span>` +
+            `<span class="tt-total">Total that year: ${total}</span>` +
+            `<div class="tt-row">` +
+              `<span class="tt-bar-swatch" style="background:${color}"></span>` +
+              `<span class="tt-label">${key}</span>` +
+              `<span class="tt-count">${val} case${val !== 1 ? "s" : ""}</span>` +
+            `</div>`;
+          tooltip.classList.add("visible");
         });
         rect.addEventListener("mousemove", e => {
           tooltip.style.left = (e.clientX + 14) + "px";
           tooltip.style.top  = (e.clientY - 36) + "px";
         });
         rect.addEventListener("mouseleave", () => {
-          tooltip.style.display = "none";
+          tooltip.classList.remove("visible");
         });
 
         svg.appendChild(rect);
