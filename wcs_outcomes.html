@@ -13,12 +13,14 @@
   <div class="viz-container">
     <div class="viz-header">
       <div class="viz-kicker">Signal Cleveland</div>
-      <div class="viz-heading">How outcomes for Body Camera charges have changed over time</div>
+      <div class="viz-heading">How outcomes for body camera charges have changed over time</div>
+      <div class="viz-subheading">Body camera charges peaked in 2021 with suspensions making up a majority of outcomes. Since 2022, non-disciplinary reinstructions have surged — accounting for nearly half of all outcomes in 2023.</div>
     </div>
+    <div class="legend" id="legend"></div>
     <div class="chart-area">
       <svg class="chart-svg" id="chart" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
-    <div class="legend" id="legend"></div>
+    <div class="viz-note">Source: Cleveland Division of Police disciplinary records, 2017-2025. Each case represents one officer charged with a Wearable Camera System (WCS) violation. Cases with multiple charges are counted once under the most severe outcome.</div>
   </div>
 
   <div class="bar-tooltip" id="tooltip"></div>
@@ -36,7 +38,6 @@
 
     // Verbal Warning (1 case, 2023) folded into Reinstruction
     const DATA = [
-      { year: 2016, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 0,  "Written Reprimand": 1,  "Reinstruction": 0,  "Charge Dropped": 0 },
       { year: 2017, "Termination": 1, "Resignation": 0, "Demotion": 0, "Suspension": 5,  "Written Reprimand": 2,  "Reinstruction": 7,  "Charge Dropped": 2 },
       { year: 2018, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 14, "Written Reprimand": 13, "Reinstruction": 5,  "Charge Dropped": 0 },
       { year: 2019, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 34, "Written Reprimand": 2,  "Reinstruction": 4,  "Charge Dropped": 2 },
