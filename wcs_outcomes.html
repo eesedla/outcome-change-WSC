@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WCS Charge Outcomes Over Time</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="viz-container">
+    <div class="viz-title">
+      <div class="viz-kicker">Cleveland Division of Police · Wearable Camera System</div>
+      <div class="viz-subtitle">How outcomes for WCS charges have changed over time</div>
+    </div>
+    <div class="chart-wrap">
+      <svg class="chart-svg" id="chart" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const CATEGORIES = [
+      { key: "Termination",      color: "#D64D4D" },
+      { key: "Resignation",      color: "#f4c913" },
+      { key: "Demotion",         color: "#6A4FC7" },
+      { key: "Suspension",       color: "#23685b" },
+      { key: "Written Reprimand", color: "#a9d2cf" },
+      { key: "Reinstruction",    color: "#e56430" },
+      { key: "Charge Dropped",   color: "#d0d64c" },
+    ];
+
+    // Verbal Warning (1 case, 2023) folded into Reinstruction
+    const DATA = [
+      { year: 2016, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 0,  "Written Reprimand": 1,  "Reinstruction": 0,  "Charge Dropped": 0 },
+      { year: 2017, "Termination": 1, "Resignation": 0, "Demotion": 0, "Suspension": 5,  "Written Reprimand": 2,  "Reinstruction": 7,  "Charge Dropped": 2 },
+      { year: 2018, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 14, "Written Reprimand": 13, "Reinstruction": 5,  "Charge Dropped": 0 },
+      { year: 2019, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 34, "Written Reprimand": 2,  "Reinstruction": 4,  "Charge Dropped": 2 },
+      { year: 2020, "Termination": 0, "Resignation": 1, "Demotion": 0, "Suspension": 41, "Written Reprimand": 4,  "Reinstruction": 14, "Charge Dropped": 4 },
+      { year: 2021, "Termination": 1, "Resignation": 1, "Demotion": 1, "Suspension": 60, "Written Reprimand": 11, "Reinstruction": 3,  "Charge Dropped": 8 },
+      { year: 2022, "Termination": 0, "Resignation": 1, "Demotion": 0, "Suspension": 19, "Written Reprimand": 3,  "Reinstruction": 15, "Charge Dropped": 0 },
+      { year: 2023, "Termination": 1, "Resignation": 4, "Demotion": 1, "Suspension": 19, "Written Reprimand": 7,  "Reinstruction": 30, "Charge Dropped": 1 },
+      { year: 2024, "Termination": 0, "Resignation": 2, "Demotion": 0, "Suspension": 11, "Written Reprimand": 5,  "Reinstruction": 5,  "Charge Dropped": 0 },
+      { year: 2025, "Termination": 0, "Resignation": 0, "Demotion": 0, "Suspension": 4,  "Written Reprimand": 2,  "Reinstruction": 2,  "Charge Dropped": 0 },
+    ];
+
+    const W = 800, H = 340;
+    const m = { top: 12, right: 20, bottom: 44, left: 48 };
+    const plotW = W - m.left - m.right;
+    const plotH = H - m.top - m.bottom;
+    const MAX_Y = 90;
+    const Y_TICKS = [0, 15, 30, 45, 60, 75, 90];
+
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.getElementById("chart");
+
+    function svgEl(tag, attrs) {
+      const e = document.createElementNS(ns, tag);
+      if (attrs) Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+      return e;
+    }
+
+    const n = DATA.length;
+    const groupW = plotW / n;
+    const barW = groupW * 0.62;
+
+    function xCenter(i) { return m.left + i * groupW + groupW / 2; }
+    function yPx(v)      { return m.top + plotH - (v / MAX_Y) * plotH; }
+
+    // Gridlines + Y tick labels
+    Y_TICKS.forEach(tick => {
+      const y = yPx(tick);
+      if (tick > 0) {
+        svg.appendChild(svgEl("line", {
+          x1: m.left, x2: m.left + plotW,
+          y1: y, y2: y,
+          stroke: "#404F54", "stroke-opacity": "0.12", "stroke-width": "1",
+        }));
+      }
+      const label = svgEl("text", {
+        class: "axis-label",
+        x: m.left - 8, y,
+        "text-anchor": "end",
+        "dominant-baseline": "middle",
+      });
+      label.textContent = tick;
+      svg.appendChild(label);
+    });
+
+    // Baseline
+    svg.appendChild(svgEl("line", {
+      x1: m.left, x2: m.left + plotW,
+      y1: yPx(0), y2: yPx(0),
+      stroke: "#404F54", "stroke-opacity": "0.25", "stroke-width": "1",
+    }));
+
+    // Y axis label
+    const yAxisLabel = svgEl("text", {
+      class: "axis-label",
+      transform: `translate(${m.left - 38}, ${m.top + plotH / 2}) rotate(-90)`,
+      "text-anchor": "middle",
+    });
+    yAxisLabel.textContent = "Number of cases";
+    svg.appendChild(yAxisLabel);
+
+    // Tooltip
+    const tooltip = document.getElementById("tooltip");
+
+    // Bars
+    DATA.forEach((d, i) => {
+      const cx = xCenter(i);
+      const x = cx - barW / 2;
+      const total = CATEGORIES.reduce((s, c) => s + (d[c.key] || 0), 0);
+
+      let cumY = 0;
+      CATEGORIES.forEach(({ key, color }) => {
+        const val = d[key] || 0;
+        if (val === 0) return;
+        const barH = (val / MAX_Y) * plotH;
+        const y = yPx(cumY + val);
+
+        const rect = svgEl("rect", {
+          class: "bar-segment",
+          x, y,
+          width: barW,
+          height: barH,
+          fill: color,
+        });
+
+        rect.addEventListener("mouseenter", () => {
+          tooltip.style.display = "block";
+          tooltip.innerHTML =
+            `<strong>${d.year} — ${key}</strong><br>` +
+            `${val} case${val !== 1 ? "s" : ""}<br>` +
+            `<span class="tip-dim">Total that year: ${total}</span>`;
+        });
+        rect.addEventListener("mousemove", e => {
+          tooltip.style.left = (e.clientX + 14) + "px";
+          tooltip.style.top  = (e.clientY - 36) + "px";
+        });
+        rect.addEventListener("mouseleave", () => {
+          tooltip.style.display = "none";
+        });
+
+        svg.appendChild(rect);
+        cumY += val;
+      });
+
+      // X axis year label
+      const label = svgEl("text", {
+        class: "axis-label",
+        x: cx,
+        y: yPx(0) + 13,
+        "text-anchor": "middle",
+        "dominant-baseline": "hanging",
+      });
+      label.textContent = d.year;
+      svg.appendChild(label);
+    });
+
+    // Legend
+    const legendEl = document.getElementById("legend");
+    CATEGORIES.forEach(({ key, color }) => {
+      const item = document.createElement("div");
+      item.className = "legend-item";
+      item.innerHTML = `<span class="legend-swatch" style="background:${color}"></span>${key}`;
+      legendEl.appendChild(item);
+    });
+  </script>
+</body>
+</html>
