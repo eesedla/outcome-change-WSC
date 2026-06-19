@@ -13,9 +13,7 @@ body {
 .viz-container {
   width: 100%;
   max-width: 900px;
-  background: #f4f0e6;
-  border: 1px solid #404F54;
-  border-top: none;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -30,7 +28,6 @@ body {
 /* Viz header */
 .viz-header {
   padding: 20px 20px 16px;
-  border-bottom: 1px solid #404F54;
 }
 
 .viz-kicker {
@@ -65,17 +62,16 @@ body {
 /* Toggle bar */
 .toggle-bar {
   padding: 10px 20px;
-  border-bottom: 1px solid #404F54;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  background: #F4F0E6;
+  background: transparent;
 }
 
 .toggle-label {
   font-size: 0.75rem;
-  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -85,7 +81,7 @@ body {
 }
 
 .toggle-btn {
-  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   padding: 6px 14px;
@@ -290,18 +286,7 @@ font-family: 'Inter', Arial, sans-serif;
 .bar-tooltip .tt-label { flex: 1; font-size: 0.72rem; }
 .bar-tooltip .tt-count { font-size: 0.72rem; font-weight: 600; }
 
-/* Note */
-.viz-note {
-  font-size: 12px;
-  font-family: 'Inter', Arial, sans-serif;
-  font-weight: 500;
-  color: #404F54;
-  opacity: 0.55;
-  line-height: 1.4;
-  padding: 8px 15px;
-  border-top: 1px solid #404F54;
-  background: #F4F0E6;
-}
+
 
 /* === WCS stacked bar chart (SVG) === */
 .chart-svg {
@@ -339,7 +324,7 @@ font-family: 'Inter', Arial, sans-serif;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+   font-family: 'Inter', Arial, sans-serif;
   font-size: 13px;
    font-weight: 500;
   color: #404F54;
