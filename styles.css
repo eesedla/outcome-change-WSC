@@ -6,7 +6,6 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  min-height: 100vh;
   padding: 32px 16px;
 }
 
@@ -81,12 +80,12 @@ body {
 }
 
 .toggle-btn {
-  font-family: 'Inter', Arial, sans-serif;
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
   font-size: 0.85rem;
   font-weight: 500;
   padding: 6px 14px;
   border-radius: 2px;
-  border: 1px solid #404F54;
+  border: 1px solid #ccd8db;
   background: #fff;
   cursor: pointer;
   transition: all 0.12s;
@@ -97,8 +96,8 @@ body {
   gap: 5px;
 }
 
-.toggle-btn:hover { border-color: #404F54; color: #404F54; }
-.toggle-btn.active { color: white; border-color: transparent; }
+.toggle-btn:hover { border-color: #23685b; }
+.toggle-btn.active { color: white; border-color: transparent; background: #23685b; }
 .toggle-btn .dot {
   width: 7px; height: 7px;
   border-radius: 50%;
@@ -278,8 +277,8 @@ font-family: 'Inter', Arial, sans-serif;
 }
 
 .bar-tooltip .tt-bar-swatch {
-  width: 8px; height: 8px;
-  border-radius: 1px;
+  width: 9px; height: 9px;
+  border-radius: 2px;
   flex-shrink: 0;
 }
 
@@ -295,21 +294,42 @@ font-family: 'Inter', Arial, sans-serif;
   overflow: visible;
 }
 
-.axis-label {
+.axis-text {
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 12px;
+  fill: #404F54;
+}
+
+.ytick {
   font-family: 'Inter', Arial, sans-serif;
   font-size: 11px;
   fill: #404F54;
-  opacity: 0.65;
+  opacity: 0.5;
 }
 
-.svg-bar {
+.gridline {
+  stroke: #404F54;
+  stroke-opacity: 0.12;
+  stroke-width: 1;
+}
+
+.col-total {
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  fill: #404F54;
+}
+
+.seg {
   transition: opacity 0.1s;
 }
 
-.svg-bar:hover {
+.seg:hover {
   opacity: 0.82;
   cursor: crosshair;
 }
+
+.seg.dim { opacity: 0.06; }
 
 .legend {
   display: flex;
@@ -320,19 +340,62 @@ font-family: 'Inter', Arial, sans-serif;
   border-bottom: 1px solid rgba(64, 79, 84, 0.15);
 }
 
-.legend-item {
-  display: flex;
+.legend-chip {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-   font-family: 'Inter', Arial, sans-serif;
-  font-size: 13px;
-   font-weight: 500;
+  font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: #404F54;
+  background: #fff;
+  border: 1px solid rgba(64,79,84,0.28);
+  border-radius: 2px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.12s;
 }
 
-.legend-swatch {
-  width: 11px;
-  height: 11px;
+.legend-chip:hover { border-color: #23685b; }
+
+.legend-chip .lg-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   flex-shrink: 0;
+}
+
+.legend-chip .lg-count {
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 0.7rem;
+  opacity: 0.55;
+  font-weight: 500;
+}
+
+.legend-chip.muted { opacity: 0.4; }
+.legend-chip.solo {
+  background: var(--chip-color, #404F54);
+  color: #fff;
+  border-color: transparent;
+}
+.legend-chip.solo .lg-dot { background: rgba(255,255,255,0.8) !important; }
+.legend-chip.solo .lg-count { opacity: 0.85; }
+
+.viz-note {
+  font-size: 12px;
+  font-family: 'Inter', Arial, sans-serif;
+  font-weight: 500;
+  color: #404F54;
+  opacity: 0.55;
+  line-height: 1.4;
+  padding: 8px 20px;
+}
+
+.viz-source {
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 11px;
+  color: #404F54;
+  opacity: 0.5;
+  padding: 10px 20px 20px;
+  line-height: 1.5;
 }

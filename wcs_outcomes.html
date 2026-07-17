@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WCS Charge Outcomes Over Time</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -20,19 +18,22 @@
     <div class="chart-area">
       <svg class="chart-svg" id="chart" viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
-  
+  </div>
 
+  <!-- Tooltip lives outside the container so fixed positioning works cleanly -->
   <div class="bar-tooltip" id="tooltip"></div>
 
   <script>
+    // Ordered largest-total-first (drawn at the base of the stack, smallest
+    // on top) so the categories driving year-to-year variation are easiest to read.
     const CATEGORIES = [
-      { key: "Termination",      color: "#D64D4D" },
-      { key: "Resignation",      color: "#f4c913" },
-      { key: "Demotion",         color: "#6A4FC7" },
       { key: "Suspension",       color: "#23685b" },
-      { key: "Written Reprimand", color: "#a9d2cf" },
-      { key: "Reinstruction",    color: "#e56430" },
-      { key: "Charge Dropped",   color: "#d0d64c" },
+      { key: "Reinstruction",    color: "#a9d2cf" },
+      { key: "Written Reprimand", color: "#5fa896" },
+      { key: "Charge Dropped",   color: "#dbe7e3" },
+      { key: "Resignation",      color: "#e56430" },
+      { key: "Termination",      color: "#d64d4d" },
+      { key: "Demotion",         color: "#e6a94d" },
     ];
 
     // Verbal Warning (1 case, 2023) folded into Reinstruction
@@ -74,15 +75,13 @@
     // Gridlines + Y tick labels
     Y_TICKS.forEach(tick => {
       const y = yPx(tick);
-      if (tick > 0) {
-        svg.appendChild(svgEl("line", {
-          x1: m.left, x2: m.left + plotW,
-          y1: y, y2: y,
-          stroke: "#404F54", "stroke-opacity": "0.12", "stroke-width": "1",
-        }));
-      }
+      svg.appendChild(svgEl("line", {
+        class: "gridline",
+        x1: m.left, x2: m.left + plotW,
+        y1: y, y2: y,
+      }));
       const label = svgEl("text", {
-        class: "axis-label",
+        class: "ytick",
         x: m.left - 8, y,
         "text-anchor": "end",
         "dominant-baseline": "middle",
@@ -90,22 +89,6 @@
       label.textContent = tick;
       svg.appendChild(label);
     });
-
-    // Baseline
-    svg.appendChild(svgEl("line", {
-      x1: m.left, x2: m.left + plotW,
-      y1: yPx(0), y2: yPx(0),
-      stroke: "#404F54", "stroke-opacity": "0.25", "stroke-width": "1",
-    }));
-
-    // Y axis label
-    const yAxisLabel = svgEl("text", {
-      class: "axis-label",
-      transform: `translate(${m.left - 38}, ${m.top + plotH / 2}) rotate(-90)`,
-      "text-anchor": "middle",
-    });
-    yAxisLabel.textContent = "Number of cases";
-    svg.appendChild(yAxisLabel);
 
     // Tooltip
     const tooltip = document.getElementById("tooltip");
@@ -124,12 +107,16 @@
         const y = yPx(cumY + val);
 
         const rect = svgEl("rect", {
-          class: "svg-bar",
+          class: "seg",
           x, y,
           width: barW,
           height: barH,
           fill: color,
         });
+        rect.dataset.cat = key;
+        rect.dataset.group = key;
+        rect.dataset.finalY = y;
+        rect.dataset.finalHeight = barH;
 
         rect.addEventListener("mouseenter", () => {
           tooltip.innerHTML =
@@ -154,9 +141,19 @@
         cumY += val;
       });
 
+      // Total label above the stack
+      const totalLabel = svgEl("text", {
+        class: "col-total",
+        x: cx,
+        y: yPx(cumY) - 6,
+        "text-anchor": "middle",
+      });
+      totalLabel.textContent = total;
+      svg.appendChild(totalLabel);
+
       // X axis year label
       const label = svgEl("text", {
-        class: "axis-label",
+        class: "axis-text",
         x: cx,
         y: yPx(0) + 13,
         "text-anchor": "middle",
@@ -166,14 +163,124 @@
       svg.appendChild(label);
     });
 
-    // Legend
+    // Legend (clickable filter)
     const legendEl = document.getElementById("legend");
+    let activeFilter = null;
+
     CATEGORIES.forEach(({ key, color }) => {
-      const item = document.createElement("div");
-      item.className = "legend-item";
-      item.innerHTML = `<span class="legend-swatch" style="background:${color}"></span>${key}`;
-      legendEl.appendChild(item);
+      const total = DATA.reduce((sum, d) => sum + (d[key] || 0), 0);
+      const chip = document.createElement("div");
+      chip.className = "legend-chip";
+      chip.dataset.key = key;
+      chip.style.setProperty("--chip-color", color);
+      chip.innerHTML = `<span class="lg-dot" style="background:${color}"></span>${key}<span class="lg-count">${total}</span>`;
+      chip.addEventListener("click", () => {
+        activeFilter === key ? clearFilter() : setFilter(key);
+      });
+      legendEl.appendChild(chip);
     });
+
+    function setFilter(key) {
+      activeFilter = key;
+      legendEl.querySelectorAll(".legend-chip").forEach(chip => {
+        const isActive = chip.dataset.key === key;
+        chip.classList.toggle("solo", isActive);
+        chip.classList.toggle("muted", !isActive);
+      });
+      svg.querySelectorAll(".seg").forEach(r => {
+        r.classList.toggle("dim", r.dataset.cat !== key);
+      });
+    }
+
+    function clearFilter() {
+      activeFilter = null;
+      legendEl.querySelectorAll(".legend-chip").forEach(chip => {
+        chip.classList.remove("solo", "muted");
+      });
+      svg.querySelectorAll(".seg").forEach(r => r.classList.remove("dim"));
+    }
+
+    // ── Bar entrance animation ──────────────────────────────────
+    const STAGGER_ORDER  = CATEGORIES.map(c => c.key);
+    const STAGGER_STEP   = 0;   // ms delay between each stacked layer starting
+    const SEG_DURATION   = 700; // ms duration of each segment's own grow-in
+    const TOTAL_DURATION = STAGGER_STEP * (STAGGER_ORDER.length - 1) + SEG_DURATION + 250;
+    const ease = t => 1 - Math.pow(1 - t, 3);
+    let animGen = 0;
+
+    function hideBars() {
+      const baseline = yPx(0);
+      svg.querySelectorAll(".seg").forEach(rect => {
+        rect.setAttribute("y", baseline);
+        rect.setAttribute("height", 0);
+      });
+      svg.querySelectorAll(".col-total").forEach(l => l.setAttribute("opacity", "0"));
+    }
+
+    function animateBars() {
+      const gen = ++animGen;
+      const baseline = yPx(0);
+      const start = performance.now();
+
+      svg.querySelectorAll(".seg").forEach(rect => {
+        const finalY = parseFloat(rect.dataset.finalY);
+        const finalH = parseFloat(rect.dataset.finalHeight);
+        const delay  = STAGGER_ORDER.indexOf(rect.dataset.group) * STAGGER_STEP;
+        rect.setAttribute("y", baseline);
+        rect.setAttribute("height", 0);
+        function frame(now) {
+          if (gen !== animGen) return;
+          const elapsed = now - start - delay;
+          if (elapsed < 0) { requestAnimationFrame(frame); return; }
+          const t = Math.min(elapsed / SEG_DURATION, 1);
+          const e = ease(t);
+          rect.setAttribute("height", Math.max(finalH * e, 0));
+          rect.setAttribute("y", baseline + (finalY - baseline) * e);
+          if (t < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      });
+
+      const totals = Array.from(svg.querySelectorAll(".col-total"));
+      totals.forEach(l => l.setAttribute("opacity", "0"));
+      const labelStart = 0.75;
+      function labelFrame(now) {
+        if (gen !== animGen) return;
+        const t = Math.min((now - start) / TOTAL_DURATION, 1);
+        const op = Math.max(0, Math.min(1, (t - labelStart) / (1 - labelStart)));
+        totals.forEach(l => l.setAttribute("opacity", op));
+        if (t < 1) requestAnimationFrame(labelFrame);
+      }
+      requestAnimationFrame(labelFrame);
+    }
+
+    const chartAreaSentinel = document.createElement("div");
+    chartAreaSentinel.style.cssText = "position:absolute;bottom:0;left:0;width:1px;height:1px;pointer-events:none;";
+    document.querySelector(".chart-area").appendChild(chartAreaSentinel);
+
+    let chartAnimated = false;
+    const barObserver = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !chartAnimated) {
+        chartAnimated = true;
+        animateBars();
+      }
+    }, { threshold: 0 });
+
+    hideBars();
+    barObserver.observe(chartAreaSentinel);
+  </script>
+  <script>
+    /* Auto-height embed messaging (self-contained replacement for pym.js — NPR CDN retired) */
+    (function () {
+      function postHeight() {
+        var el = document.querySelector('.viz-container');
+        var h = el ? Math.ceil(el.getBoundingClientRect().bottom + 32) : document.body.scrollHeight;
+        window.parent.postMessage({ type: 'embed-height', height: h }, '*');
+      }
+      window.addEventListener('load', postHeight);
+      window.addEventListener('resize', postHeight);
+      setInterval(postHeight, 500);
+    })();
   </script>
 </body>
 </html>
