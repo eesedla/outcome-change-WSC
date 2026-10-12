@@ -1,11 +1,15 @@
 import pandas as pd
 import re
+from pathlib import Path
 import plotly.graph_objects as go
 
-df = pd.read_csv(
-    "/Users/emmasedlak/Library/Mobile Documents/com~apple~CloudDocs/Signal Freelance/CPD Analysis/outcome changes/cpd_data.csv",
-    encoding="utf-8-sig",
-)
+# Paths are relative to this script, so the tool needs nothing outside its own
+# folder (matches the other build scripts; the previous absolute path pointed
+# at a folder that no longer exists).
+HERE = Path(__file__).resolve().parent
+CSV_PATH = HERE / "cpd_data.csv"
+
+df = pd.read_csv(CSV_PATH, encoding="utf-8-sig")
 
 # Filter to rows where WCS is in Charges
 wcs = df[df["Charges"].str.contains("WCS", na=False)].copy()
@@ -120,9 +124,21 @@ fig.update_layout(
     xaxis=dict(tickmode="linear", dtick=1, tickangle=-30, gridcolor="#eee"),
 )
 
-out_path = "/Users/emmasedlak/Library/Mobile Documents/com~apple~CloudDocs/Signal Freelance/CPD Analysis/outcome changes/wcs_outcomes.html"
+# NOTE: this is the early plotly PROTOTYPE of the chart, kept for reference. The
+# published chart is the hand-built, Signal-styled wcs_outcomes.html (its data
+# comes from build_data.py) — so this writes to its own filename rather than
+# overwriting it.
+out_path = HERE / "wcs_outcomes_plotly_prototype.html"
 fig.write_html(out_path, include_plotlyjs="cdn")
 print(f"Saved: {out_path}")
+
+# Companion data export (same pivot, plus a Total column) kept in step with the
+# chart so it can't drift from it.
+counts_path = HERE / "wcs_outcomes_by_year.csv"
+export = pivot.astype(int)
+export["Total"] = export.sum(axis=1)
+export.to_csv(counts_path, index_label="year")
+print(f"Saved: {counts_path}")
 
 # Print summary table
 print("\nOutcome counts by year:")
